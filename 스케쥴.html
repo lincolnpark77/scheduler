@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eun-Chong's Daily Schedule</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        h1 {
+            color: #333;
+            font-size: 1.5em;
+        }
+        .schedule {
+            width: 100%;
+            max-width: 600px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        .activity {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 20px;
+            border-bottom: 1px solid #eee;
+        }
+        .activity.active {
+            background-color: #d3f8d3;
+        }
+        .activity:last-child {
+            border-bottom: none;
+        }
+        .time, .task {
+            font-weight: bold;
+            font-size: 1em;
+        }
+        #timer {
+            font-size: 1.5em;
+            color: #ff6347;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Eun-Chong's Daily Schedule</h1>
+    <div class="schedule" id="schedule">
+        <!-- Activity list will be generated here -->
+    </div>
+    <div id="timer">Initializing...</div>
+
+    <script>
+        const scheduleData = [
+            { time: "6:30 AM - 8:00 AM", task: "기상 및 개인정비", start: "06:30", end: "08:00" },
+            { time: "8:00 AM - 8:30 AM", task: "아침 식사", start: "08:00", end: "08:30" },
+            { time: "8:30 AM - 9:30 AM", task: "사업 관련 작업", start: "08:30", end: "09:30" },
+            { time: "9:30 AM - 10:30 AM", task: "기타 연습", start: "09:30", end: "10:30" },
+            { time: "10:30 AM - 12:00 PM", task: "공부", start: "10:30", end: "12:00" },
+            { time: "12:00 PM - 1:00 PM", task: "점심 식사", start: "12:00", end: "13:00" },
+            { time: "1:00 PM - 2:00 PM", task: "고양이 돌보기 및 휴식", start: "13:00", end: "14:00" },
+            { time: "2:00 PM - 4:00 PM", task: "운동 및 샤워", start: "14:00", end: "16:00" },
+            { time: "4:00 PM - 5:00 PM", task: "사업 관련 작업", start: "16:00", end: "17:00" },
+            { time: "5:00 PM - 6:00 PM", task: "저녁 준비 및 식사", start: "17:00", end: "18:00" },
+            { time: "6:00 PM - 7:00 PM", task: "집안일", start: "18:00", end: "19:00" },
+            { time: "7:00 PM - 11:30 PM", task: "자유 시간 (고양이와의 시간 포함)", start: "19:00", end: "23:30" },
+            { time: "11:30 PM - 6:30 AM", task: "수면", start: "23:30", end: "06:30" }
+        ];
+
+        let currentActivity = 0;
+
+        const scheduleElement = document.getElementById('schedule');
+        scheduleData.forEach((activity, index) => {
+            const activityElement = document.createElement('div');
+            activityElement.className = 'activity';
+            if (index === 0) activityElement.classList.add('active');
+            activityElement.innerHTML = `<div class="time">${activity.time}</div><div class="task">${activity.task}</div>`;
+            scheduleElement.appendChild(activityElement);
+        });
+
+        function updateSchedule() {
+            const now = new Date();
+            const currentHours = now.getHours();
+            const currentMinutes = now.getMinutes();
+
+            scheduleData.forEach((activity, index) => {
+                const [startHour, startMinute] = activity.start.split(":").map(Number);
+                const [endHour, endMinute] = activity.end.split(":").map(Number);
+
+                const isCurrentActivity = (
+                    (currentHours > startHour || (currentHours === startHour && currentMinutes >= startMinute)) &&
+                    (currentHours < endHour || (currentHours === endHour && currentMinutes < endMinute))
+                );
+
+                const activities = document.getElementsByClassName('activity');
+                if (isCurrentActivity) {
+                    if (currentActivity !== index) {
+                        activities[currentActivity].classList.remove('active');
+                        currentActivity = index;
+                        activities[currentActivity].classList.add('active');
+                    }
+                }
+            });
+
+            const timerElement = document.getElementById('timer');
+            const [endHour, endMinute] = scheduleData[currentActivity].end.split(":").map(Number);
+            const endDate = new Date();
+            endDate.setHours(endHour, endMinute, 0, 0);
+            const remainingTime = Math.max(0, endDate - now);
+            const secondsLeft = Math.floor((remainingTime / 1000) % 60);
+            const minutesLeft = Math.floor((remainingTime / 1000 / 60) % 60);
+            const hoursLeft = Math.floor((remainingTime / 1000 / 60 / 60) % 24);
+
+            timerElement.textContent = `남은 시간: ${hoursLeft}:${minutesLeft < 10 ? '0' : ''}${minutesLeft}:${secondsLeft < 10 ? '0' : ''}${secondsLeft}`;
+
+            if (remainingTime === 0 && scheduleData[currentActivity + 1]) {
+                // 활동 종료 후 다음 활동으로 넘어가도록 합니다.
+            }
+        }
+
+        setInterval(updateSchedule, 1000);
+    </script>
+</body>
+</html>
